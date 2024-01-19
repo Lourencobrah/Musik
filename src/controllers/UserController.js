@@ -63,8 +63,7 @@ class UserController {
         Object.assign(verifyUser, newData);
         await verifyUser.save();
         return res.status(201).json({
-          message: `User ${email} updated`,
-          updatedUser: `New data ${verifyUser}`,
+          message: `User ${email} updated`
         });
       } else {
         return res.status(404).json({
