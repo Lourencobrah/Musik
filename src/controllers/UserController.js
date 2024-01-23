@@ -3,26 +3,27 @@ import bcrypt from "bcrypt";
 
 class UserController {
   async create(req, res) {
-    const { name, email, password } = req.body;
+    const { username, name, email, password } = req.body;
 
     try {
-      const existingUser = await User.findOne({ email });
+      const existingUser = await User.findOne({ username });
 
       if (existingUser) {
         return res.status(403).json({
-          error: `User ${name} already exists`,
+          error: `User ${username} already exists`,
         });
       }
 
       const hashPassword = await bcrypt.hash(password, 14);
       await User.create({
+        username,
         name,
         email,
         password: hashPassword,
       });
 
       return res.status(201).json({
-        message: `User ${name} created`,
+        message: `User ${username} created`,
       });
     } catch (error) {
       return res.status(500).json({
@@ -32,14 +33,13 @@ class UserController {
   }
 
   async read(req, res) {
-    const { name } = req.params;
+    const { username } = req.params;
 
     try {
-      const user = await User.findOne({ name });
+      const user = await User.findOne({ username });
       if (user) {
         return res.status(201).json({
-          message: `User ${name} founded`,
-          userData: [user.name, user.email],
+          userData: [user._id, user.username, user.name, user.email],
         });
       } else {
         return res.status(404).json({
@@ -54,16 +54,16 @@ class UserController {
   }
 
   async update(req, res) {
-    const { email, newData } = req.body;
+    const { username, newData } = req.body;
 
     try {
-      const verifyUser = await User.findOne({ email });
+      const verifyUser = await User.findOne({ username });
 
       if (verifyUser) {
         Object.assign(verifyUser, newData);
         await verifyUser.save();
         return res.status(201).json({
-          message: `User ${email} updated`
+          message: `User ${username} updated`,
         });
       } else {
         return res.status(404).json({
@@ -78,15 +78,22 @@ class UserController {
   }
 
   async delete(req, res) {
-    const { name, email } = req.body;
+    const { username, password } = req.body;
 
     try {
-      const verifyUser = await User.findOne({ email });
+      const verifyUser = await User.findOne({ username });
       if (verifyUser) {
-        await User.deleteOne({ email });
-        return res.status(201).json({
-          message: `User ${name} deleted`,
-        });
+        const verifyPass = await User.findOne({ password });
+        if (verifyPass) {
+          await User.deleteOne({ username });
+          return res.status(201).json({
+            message: `User ${username} deleted`,
+          });
+        } else {
+          return res.status(404).json({
+            error: "Null or Wrong password",
+          });
+        }
       } else {
         return res.status(404).json({
           error: "User not found",

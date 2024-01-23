@@ -8,13 +8,13 @@ const routes = Router();
 
 //User routes
 routes.post("/user", UserController.create);
-routes.get("/user/:name", UserController.read);
+routes.get("/user/:username", UserController.read);
 routes.put("/user", UserController.update);
 routes.delete("/user", UserController.delete);
 
 //Artist routes
 routes.post("/artist", ArtistController.create);
-routes.get("/artist/:name", ArtistController.read);
+routes.get("/artist/:username", ArtistController.read);
 routes.put("/artist", ArtistController.update);
 routes.delete("/artist", ArtistController.delete);
 

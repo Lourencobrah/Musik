@@ -3,26 +3,27 @@ import bcrypt from "bcrypt";
 
 class ArtistController {
   async create(req, res) {
-    const { name, email, password } = req.body;
+    const { username, name, email, password } = req.body;
 
     try {
-      const existingArtist = await Artist.findOne({ email });
+      const existingArtist = await Artist.findOne({ username });
 
       if (existingArtist) {
         return res.status(403).json({
-          error: `Artist ${name} already exists`,
+          error: `Artist ${username} already exists`,
         });
       }
 
       const hashPassword = await bcrypt.hash(password, 14);
       await Artist.create({
+        username,
         name,
         email,
         password: hashPassword,
       });
 
       return res.status(201).json({
-        message: `Artist ${name} created`,
+        message: `Artist ${username} created`,
       });
     } catch (error) {
       return res.status(500).json({
@@ -32,14 +33,13 @@ class ArtistController {
   }
 
   async read(req, res) {
-    const { name } = req.params;
+    const { username } = req.params;
 
     try {
-      const artist = await Artist.findOne({ name });
+      const artist = await Artist.findOne({ username });
       if (artist) {
         return res.status(201).json({
-          message: `Artist ${name} founded`,
-          artistData: [artist.name, artist.email, artist.id],
+          artistData: [artist.username, artist.name, artist.email, artist.id],
         });
       } else {
         return res.status(404).json({
@@ -63,7 +63,6 @@ class ArtistController {
         await verifyArtist.save();
         return res.status(201).json({
           message: `User ${email} updated`,
-          updatedUser: `New data ${verifyArtist}`,
         });
       } else {
         return res.status(404).json({
@@ -78,15 +77,22 @@ class ArtistController {
   }
 
   async delete(req, res) {
-    const { name, email } = req.body;
+    const { username, password } = req.body;
 
     try {
-      const verifyArtist = await Artist.findOne({ email });
+      const verifyArtist = await Artist.findOne({ username });
       if (verifyArtist) {
-        await Artist.deleteOne({ email });
-        return res.status(201).json({
-          message: `User ${name} deleted`,
-        });
+        const verifyPass = await Artist.findOne({ password });
+        if (verifyPass) {
+          await Artist.deleteOne({ username });
+          return res.status(201).json({
+            message: `Artist ${username} deleted`,
+          });
+        } else {
+          return res.status(404).json({
+            error: "Null or Wrong password",
+          });
+        }
       } else {
         return res.status(404).json({
           error: "User not found",

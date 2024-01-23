@@ -5,11 +5,6 @@ const Album = mongoose.Schema({
     type: String,
     required: true,
   },
-  artist: {
-    type: String,
-    ref: "Artist",
-    required: true,
-  },
 });
 
 export default mongoose.model("Album", Album);

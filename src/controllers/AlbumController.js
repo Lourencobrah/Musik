@@ -1,41 +1,28 @@
-import mongoose from "mongoose";
 import Album from "../models/Album.js";
 
 class AlbumController {
   async create(req, res) {
-    const { name, id } = req.body;
+    const { _id, name } = req.body;
 
-    const verifyAlbum = await Album.findOne({ name });
-    if (verifyAlbum) {
-      return res.status(403).json({
-        message: `Album ${name} already exist`,
-      });
-    } else if (!verifyAlbum) {
-      const album = await Album.create({
-        name,
-        artist: id,
-      });
+    try {
+      const existingAlbum = await Album.findOne({ _id });
 
-      console.log(verifyAlbum);
-
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({
-          message: "Invalid Id"
+      if (existingAlbum) {
+        return res.status(403).json({
+          error: `Album ${name} already exists`,
         });
       }
 
-      const populatedAlbum = await Album.findOne({ _id: album._id }).populate(
-        "artist"
-      );
+      await Album.create({
+        name,
+      });
 
       return res.status(201).json({
         message: `Album ${name} created`,
-        album: populatedAlbum,
       });
-    } else {
+    } catch (error) {
       return res.status(500).json({
-        message: "Internal Server Error",
-        error: error.message,
+        error: "Internal Server Error",
       });
     }
   }

@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 
 const Artist = mongoose.Schema({
+  username: {
+    type: String,
+    required: true
+  },
   name: {
     type: String,
     required: true,
